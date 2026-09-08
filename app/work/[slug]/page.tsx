@@ -1,0 +1,15 @@
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { Check } from "lucide-react"
+import { Breadcrumbs, JsonLd } from "@/components/content"
+import { CTA } from "@/components/site-shell"
+import { getProject, projects } from "@/lib/content"
+
+export function generateStaticParams() { return projects.map(({ slug }) => ({ slug })) }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> { const { slug } = await params; const project = getProject(slug); if (!project) return {}; return { title: project.title, description: project.summary, alternates: { canonical: `/work/${slug}` } } }
+
+export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; const project = getProject(slug); if (!project) notFound()
+  const data = { "@context":"https://schema.org", "@type":"CreativeWork", name:project.title, description:project.summary, creator:{"@type":"Organization",name:"Careomat"}, url:`https://www.careomat.co.uk/work/${slug}` }
+  return <><JsonLd data={data}/><Breadcrumbs items={[{label:"Work",href:"/work"},{label:project.title}]}/><article><header className="border-y"><div className="page-shell grid gap-10 py-16 lg:grid-cols-[1fr_.35fr]"><div className="flex flex-col gap-6"><p className="eyebrow">{project.sector} / {project.service}</p><h1 className="max-w-4xl text-balance text-4xl font-semibold tracking-[-0.04em] md:text-6xl">{project.title}</h1><p className="max-w-2xl text-lg leading-8 text-muted-foreground">{project.summary}</p></div><dl className="grid grid-cols-2 gap-6 border-t pt-6 lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-8"><div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Year</dt><dd className="mt-2 font-semibold">{project.year}</dd></div><div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Headline outcome</dt><dd className="mt-2 font-semibold text-primary">{project.outcome}</dd></div></dl></div></header><div className="page-shell grid gap-14 py-20 lg:grid-cols-[.4fr_.6fr]"><h2 className="text-2xl font-semibold">The challenge</h2><p className="max-w-2xl text-lg leading-8 text-muted-foreground">{project.challenge}</p></div><section className="bg-muted"><div className="page-shell grid gap-14 py-20 lg:grid-cols-[.4fr_.6fr]"><h2 className="text-2xl font-semibold">Our approach</h2><ol className="flex flex-col gap-8">{project.approach.map((item,index)=><li key={item} className="flex gap-5 border-b pb-7"><span className="font-mono text-sm text-primary">0{index+1}</span><p className="leading-7">{item}</p></li>)}</ol></div></section><section><div className="page-shell grid gap-14 py-20 lg:grid-cols-[.4fr_.6fr]"><h2 className="text-2xl font-semibold">What changed</h2><ul className="flex flex-col gap-5">{project.results.map((result)=><li key={result} className="flex gap-4 rounded-lg border p-5"><Check className="text-primary" aria-hidden="true"/><span className="font-medium">{result}</span></li>)}</ul></div></section></article><CTA/></>
+}
