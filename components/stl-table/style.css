@@ -1,0 +1,111 @@
+/* Structured Table Language (STL) - Border Theme */
+.st-theme-border {
+    --st-border-color: var(--border, rgba(128, 128, 128, 0.2));
+    --st-bg-color: var(--card, transparent);
+    --st-btn-bg-color: var(--primary, rgba(0, 0, 0, 0.75));
+    --st-fg-color: var(--foreground, inherit);
+    --st-muted-bg-color: var(--muted, rgba(128, 128, 128, 0.05));
+
+    width: 100%;
+    overflow-x: auto;
+    color: var(--st-fg-color);
+    margin: 1.5rem 0;
+    border-radius: 0.5rem;
+}
+
+.st-theme-border thead tr,
+.st-theme-border tfoot tr {
+    background-color: var(--st-muted-bg-color);
+}
+
+.st-theme-border table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid var(--st-border-color);
+    font-size: 0.875rem;
+}
+
+.st-theme-border th {
+    border: 1px solid var(--st-border-color);
+    border-bottom: 2px solid var(--st-border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--st-fg-color);
+}
+
+.st-theme-border tbody tr {
+    background-color: var(--st-bg-color);
+    border-bottom: 1px solid var(--st-border-color);
+}
+
+.st-theme-border tbody tr a {
+    color: var(--st-fg-color);
+    text-decoration: underline;
+}
+
+.st-theme-border tbody tr a:hover {
+    text-decoration: none;
+}
+
+.st-theme-border tbody tr button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.st-theme-border tbody tr button[data-variant="default"] {
+    color: var(--st-bg-color);
+    background-color: var(--st-btn-bg-color);
+    border: 1px solid var(--st-fg-color);
+}
+
+.st-theme-border tbody tr button[data-variant="default"]:hover {
+    opacity: 0.9;
+}
+
+.st-theme-border tbody tr button[data-variant="outline"] {
+    color: var(--st-fg-color);
+    background-color: transparent;
+    border: 1px solid var(--st-border-color);
+}
+
+.st-theme-border tbody tr button[data-variant="outline"]:hover {
+    background-color: var(--st-muted-bg-color);
+}
+
+.st-theme-border tbody tr button[data-variant="ghost"] {
+    color: var(--st-fg-color);
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+.st-theme-border tbody tr button[data-variant="ghost"]:hover {
+    background-color: var(--st-muted-bg-color);
+}
+
+.st-theme-border tbody tr button[data-variant="default"]:active {
+    background-color: var(--st-bg-color);
+    color: var(--st-fg-color);
+}
+
+.st-theme-border tbody tr:last-child {
+    border-bottom: none;
+}
+
+.st-theme-border td {
+    border: 1px solid var(--st-border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: var(--st-fg-color);
+}
+
+.st-theme-border tfoot th {
+    border: 1px solid var(--st-border-color);
+    border-top: 2px solid var(--st-border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
