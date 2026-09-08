@@ -4,6 +4,7 @@ import { authorSchema } from "./author";
 import { seoSchema } from "./seo";
 import { projectSchema } from "./project";
 import { stlTableBlock } from "./stlTableBlock";
+import { contactSubmissionSchema } from "./contactSubmission";
 
 export const schemaTypes = [
   postSchema,
@@ -12,6 +13,7 @@ export const schemaTypes = [
   seoSchema,
   projectSchema,
   stlTableBlock,
+  contactSubmissionSchema,
 ];
 
-export { postSchema, categorySchema, authorSchema, seoSchema, projectSchema, stlTableBlock };
+export { postSchema, categorySchema, authorSchema, seoSchema, projectSchema, stlTableBlock, contactSubmissionSchema };
