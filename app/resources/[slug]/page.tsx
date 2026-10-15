@@ -6,9 +6,12 @@ import { ArrowLeft, User } from "lucide-react";
 import { Breadcrumbs, JsonLd } from "@/components/content";
 import { CustomPortableText } from "@/components/portable-text";
 import { CTA } from "@/components/site-shell";
-import { articles, getArticle } from "@/lib/content";
 import { sanityFetch } from "@/sanity/lib/client";
-import { POSTS_QUERY, POST_BY_SLUG_QUERY, type SanityPost } from "@/sanity/lib/queries";
+import {
+  POSTS_QUERY,
+  POST_BY_SLUG_QUERY,
+  type SanityPost,
+} from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 
 export const revalidate = 60;
@@ -19,11 +22,10 @@ export async function generateStaticParams() {
       query: POSTS_QUERY,
     });
     const sanitySlugs = sanityPosts?.map((p) => ({ slug: p.slug })) || [];
-    const staticSlugs = articles.map(({ slug }) => ({ slug }));
-    const allSlugs = new Set([...sanitySlugs.map(s => s.slug), ...staticSlugs.map(s => s.slug)]);
+    const allSlugs = new Set([...sanitySlugs.map((s) => s.slug)]);
     return Array.from(allSlugs).map((slug) => ({ slug }));
   } catch {
-    return articles.map(({ slug }) => ({ slug }));
+    return [];
   }
 }
 
@@ -44,17 +46,20 @@ export async function generateMetadata({
     // fallback
   }
 
-  const fallback = getArticle(slug);
-  const title = sanityPost?.seo?.metaTitle || sanityPost?.title || fallback?.title;
-  const description = sanityPost?.seo?.metaDescription || sanityPost?.excerpt || fallback?.excerpt;
+  const title = sanityPost?.seo?.metaTitle || sanityPost?.title;
+  const description = sanityPost?.seo?.metaDescription || sanityPost?.excerpt;
 
   if (!title) return {};
 
   const shareImageUrl = sanityPost?.seo?.shareImage?.asset?._ref
-    ? urlFor(sanityPost.seo.shareImage).width(1200).height(630).fit("crop").url()
+    ? urlFor(sanityPost.seo.shareImage)
+        .width(1200)
+        .height(630)
+        .fit("crop")
+        .url()
     : sanityPost?.coverImage?.asset?._ref
-    ? urlFor(sanityPost.coverImage).width(1200).height(630).fit("crop").url()
-    : undefined;
+      ? urlFor(sanityPost.coverImage).width(1200).height(630).fit("crop").url()
+      : undefined;
 
   return {
     title,
@@ -64,7 +69,7 @@ export async function generateMetadata({
       type: "article",
       title,
       description,
-      publishedTime: sanityPost?.publishedAt || fallback?.date,
+      publishedTime: sanityPost?.publishedAt,
       modifiedTime: sanityPost?.updatedAt,
       images: shareImageUrl ? [{ url: shareImageUrl }] : undefined,
     },
@@ -89,36 +94,35 @@ export default async function ArticlePage({
     console.error("Failed to fetch post from Sanity:", err);
   }
 
-  const staticArticle = getArticle(slug);
-
-  if (!sanityPost && !staticArticle) {
+  if (!sanityPost) {
     notFound();
   }
 
-  const title = sanityPost?.title || staticArticle?.title || "";
-  const excerpt = sanityPost?.excerpt || staticArticle?.excerpt || "";
-  const intro = staticArticle?.intro || excerpt;
-  const rawDate = sanityPost?.publishedAt || staticArticle?.date;
+  const title = sanityPost?.title || "";
+  const excerpt = sanityPost?.excerpt || "";
+  const intro = excerpt;
+  const rawDate = sanityPost?.publishedAt;
   const formattedDate = rawDate
-    ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(
-        new Date(rawDate)
-      )
+    ? new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(rawDate))
     : "";
 
   const categoryTitle =
     typeof sanityPost?.category === "object" && sanityPost?.category
       ? sanityPost.category.title
-      : staticArticle?.category || "Resources";
+      : "Resources";
 
   const categoryColor =
     typeof sanityPost?.category === "object" && sanityPost?.category?.color
       ? sanityPost.category.color
       : "text-primary";
 
-  const readTime =
-    sanityPost?.readingTime
-      ? `${sanityPost.readingTime} min read`
-      : staticArticle?.readTime || "5 min read";
+  const readTime = sanityPost?.readingTime
+    ? `${sanityPost.readingTime} min read`
+    : "5 min read";
 
   // Table of contents headings
   const tocHeadings: { heading: string; id: string }[] = [];
@@ -126,16 +130,15 @@ export default async function ArticlePage({
     for (const block of sanityPost.body) {
       if (block._type === "block" && block.style === "h2") {
         const text = block.children?.map((c: any) => c.text).join("") || "";
-        const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        const id = text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
         if (text) {
           tocHeadings.push({ heading: text, id });
         }
       }
     }
-  } else if (staticArticle?.sections) {
-    staticArticle.sections.forEach((section, index) => {
-      tocHeadings.push({ heading: section.heading, id: `section-${index + 1}` });
-    });
   }
 
   const authorsList = sanityPost?.authors || [];
@@ -173,7 +176,9 @@ export default async function ArticlePage({
   return (
     <>
       <JsonLd data={jsonLdData} />
-      <Breadcrumbs items={[{ label: "Resources", href: "/resources" }, { label: title }]} />
+      <Breadcrumbs
+        items={[{ label: "Resources", href: "/resources" }, { label: title }]}
+      />
 
       <article>
         <header className="border-y bg-muted/10">
@@ -205,15 +210,24 @@ export default async function ArticlePage({
               <div className="mt-4 flex flex-wrap items-center gap-6 border-t pt-6">
                 {authorsList.map((item, idx) => {
                   const author = item.author;
-                  const role = item.articleRole ? (roleLabelMap[item.articleRole] || item.articleRole) : undefined;
+                  const role = item.articleRole
+                    ? roleLabelMap[item.articleRole] || item.articleRole
+                    : undefined;
                   const hasAvatar = author?.avatar?.asset?._ref;
 
                   return (
-                    <div key={author?.name || idx} className="flex items-center gap-3">
+                    <div
+                      key={author?.name || idx}
+                      className="flex items-center gap-3"
+                    >
                       {hasAvatar ? (
                         <div className="relative h-10 w-10 overflow-hidden rounded-full border">
                           <Image
-                            src={urlFor(author.avatar).width(80).height(80).fit("crop").url()}
+                            src={urlFor(author.avatar)
+                              .width(80)
+                              .height(80)
+                              .fit("crop")
+                              .url()}
                             alt={author.name}
                             fill
                             className="object-cover"
@@ -225,8 +239,14 @@ export default async function ArticlePage({
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{author?.name || "Author"}</p>
-                        {role && <p className="text-xs text-muted-foreground">{role}</p>}
+                        <p className="text-sm font-semibold text-foreground">
+                          {author?.name || "Author"}
+                        </p>
+                        {role && (
+                          <p className="text-xs text-muted-foreground">
+                            {role}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
@@ -238,7 +258,11 @@ export default async function ArticlePage({
             {sanityPost?.coverImage?.asset?._ref && (
               <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl border bg-muted">
                 <Image
-                  src={urlFor(sanityPost.coverImage).width(1200).height(675).fit("crop").url()}
+                  src={urlFor(sanityPost.coverImage)
+                    .width(1200)
+                    .height(675)
+                    .fit("crop")
+                    .url()}
                   alt={sanityPost.coverImage.alt || title}
                   fill
                   priority
@@ -255,11 +279,16 @@ export default async function ArticlePage({
           {tocHeadings.length > 0 ? (
             <aside className="hidden lg:block">
               <div className="sticky top-24">
-                <p className="mb-4 text-sm font-semibold text-foreground">In this article</p>
+                <p className="mb-4 text-sm font-semibold text-foreground">
+                  In this article
+                </p>
                 <ol className="flex flex-col gap-3 text-sm text-muted-foreground">
                   {tocHeadings.map((heading) => (
                     <li key={heading.id}>
-                      <a href={`#${heading.id}`} className="hover:text-foreground transition-colors">
+                      <a
+                        href={`#${heading.id}`}
+                        className="hover:text-foreground transition-colors"
+                      >
                         {heading.heading}
                       </a>
                     </li>
@@ -275,26 +304,14 @@ export default async function ArticlePage({
           <div className="prose-careomat min-w-0">
             {sanityPost?.body ? (
               <CustomPortableText value={sanityPost.body} />
-            ) : staticArticle?.sections ? (
-              staticArticle.sections.map((section, index) => (
-                <section key={section.heading} id={`section-${index + 1}`} className="mb-10">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-4">
-                    {section.heading}
-                  </h2>
-                  {section.body.map((paragraph) => (
-                    <p key={paragraph} className="mb-4 leading-7 text-muted-foreground">
-                      {paragraph}
-                    </p>
-                  ))}
-                </section>
-              ))
             ) : null}
 
             <Link
               href="/resources"
               className="mt-12 inline-flex items-center gap-2 font-semibold text-primary hover:underline"
             >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to resources
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to
+              resources
             </Link>
           </div>
         </div>
