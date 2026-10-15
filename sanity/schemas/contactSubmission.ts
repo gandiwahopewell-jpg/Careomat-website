@@ -1,11 +1,9 @@
 import { defineField, defineType } from "sanity";
-import { EnvelopeIcon } from "@sanity/icons";
 
 export const contactSubmissionSchema = defineType({
   name: "contactSubmission",
   title: "Contact Submission",
   type: "document",
-  icon: EnvelopeIcon,
   // Submissions come via /api/contact — not created manually in the Studio.
   fields: [
     defineField({
